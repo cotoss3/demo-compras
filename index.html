@@ -70,7 +70,7 @@
             <div class="rounded-2xl border border-white/10 bg-white/[.06] p-4"><i class="fa-solid fa-file-export text-cyan-300"></i><p class="mt-3 text-sm font-semibold">Exportación</p><p class="mt-1 text-xs text-slate-400">Excel y CSV</p></div>
           </div>
         </div>
-        <p class="text-xs text-slate-500">The Marketing Group · Plataforma desarrollada por DataKorex</p>
+        <p class="text-xs text-slate-500">The Marketing Group · Plataforma empresarial segura</p>
       </div>
       <div class="flex items-center justify-center px-5 py-10 sm:px-10">
         <div class="w-full max-w-md">
@@ -83,7 +83,7 @@
             <form id="login-form" novalidate class="space-y-5">
               <div>
                 <label for="email" class="mb-2 block text-sm font-semibold text-slate-700">Correo electrónico</label>
-                <div class="relative"><i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input id="email" type="email" value="alejandra@themarketinggroup.com" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-800 transition focus:border-blue-500 focus:bg-white" placeholder="nombre@empresa.com"></div>
+                <div class="relative"><i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input id="email" type="email" value="valeria.mendoza@themarketinggroup.com" class="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-800 transition focus:border-blue-500 focus:bg-white" placeholder="nombre.apellido@themarketinggroup.com"></div>
                 <p class="field-error mt-1.5 hidden text-xs text-red-500">Ingresa un correo válido.</p>
               </div>
               <div>
@@ -107,7 +107,7 @@
     <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden bg-slate-950/40 lg:hidden"></div>
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-[270px] flex-col border-r border-slate-200 bg-white p-4">
       <div class="flex h-16 items-center justify-between px-2">
-        <div class="flex items-center gap-3"><div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-600/20"><span class="text-sm font-black tracking-tight">TMG</span></div><div><p class="font-bold tracking-tight text-slate-900">TMG Insights</p><p class="text-[10px] font-semibold uppercase tracking-[.18em] text-slate-400">by DataKorex</p></div></div>
+        <div class="flex items-center gap-3"><div class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-600/20"><span class="text-sm font-black tracking-tight">TMG</span></div><div><p class="font-bold tracking-tight text-slate-900">TMG Insights</p><p class="text-[10px] font-semibold uppercase tracking-[.18em] text-slate-400">Portal interno</p></div></div>
         <button id="close-sidebar" class="grid h-9 w-9 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Cerrar menú"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <nav class="mt-7 flex-1 space-y-1.5" aria-label="Navegación principal">
@@ -123,7 +123,7 @@
         <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-blue-100"><div class="h-full w-[92%] rounded-full bg-blue-600"></div></div>
         <p class="mt-2 text-[10px] font-semibold text-blue-700">99.9% disponibilidad · HTTPS seguro</p>
       </div>
-      <div class="mt-4 flex items-center gap-3 border-t border-slate-100 px-2 pt-4"><div class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-xs font-bold text-white">AC</div><div class="min-w-0 flex-1"><p class="truncate text-xs font-bold text-slate-800">Alejandra Cuellar</p><p class="truncate text-[10px] text-slate-400">Perfil Ejecutivo</p></div><button data-logout class="text-slate-400 hover:text-red-500" title="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></div>
+      <div class="mt-4 flex items-center gap-3 border-t border-slate-100 px-2 pt-4"><div class="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-xs font-bold text-white">VM</div><div class="min-w-0 flex-1"><p class="truncate text-xs font-bold text-slate-800">Valeria Mendoza</p><p class="truncate text-[10px] text-slate-400">Perfil Ejecutivo</p></div><button data-logout class="text-slate-400 hover:text-red-500" title="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i></button></div>
     </aside>
 
     <div class="min-h-screen lg:pl-[270px]">
@@ -133,7 +133,7 @@
           <div class="hidden items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 md:flex"><i class="fa-regular fa-calendar text-blue-600"></i><span id="today-label"></span></div>
           <button class="relative grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50" aria-label="Notificaciones"><i class="fa-regular fa-bell"></i><span class="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white"></span></button>
           <div class="hidden h-8 w-px bg-slate-200 sm:block"></div>
-          <div class="flex items-center gap-2"><div class="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-xs font-bold text-white shadow-md">AC</div><div class="hidden sm:block"><p class="text-xs font-bold text-slate-800">Alejandra Cuellar</p><p class="text-[10px] text-slate-400">Ejecutivo</p></div></div>
+          <div class="flex items-center gap-2"><div class="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 text-xs font-bold text-white shadow-md">VM</div><div class="hidden sm:block"><p class="text-xs font-bold text-slate-800">Valeria Mendoza</p><p class="text-[10px] text-slate-400">Ejecutivo</p></div></div>
         </div>
       </header>
 
@@ -262,11 +262,11 @@
     ];
 
     const users = [
-      {name:'Alejandra Cuellar',email:'alejandra@themarketinggroup.com',initials:'AC',role:'Ejecutivo',last:'Ahora',active:true,color:'indigo'},
-      {name:'Carlos Ramírez',email:'carlos.ramirez@tmg.com',initials:'CR',role:'Analista',last:'Hace 18 min',active:true,color:'blue'},
-      {name:'Sofía Torres',email:'sofia.torres@tmg.com',initials:'ST',role:'Analista',last:'Ayer, 4:32 PM',active:true,color:'cyan'},
-      {name:'Miguel Santos',email:'miguel.santos@tmg.com',initials:'MS',role:'Operativo',last:'Hoy, 8:15 AM',active:true,color:'emerald'},
-      {name:'Paola Ríos',email:'paola.rios@tmg.com',initials:'PR',role:'Operativo',last:'02 ago 2026',active:false,color:'slate'}
+      {name:'Valeria Mendoza',email:'valeria.mendoza@themarketinggroup.com',initials:'VM',role:'Ejecutivo',last:'Ahora',active:true,color:'indigo'},
+      {name:'Diego Castillo',email:'diego.castillo@themarketinggroup.com',initials:'DC',role:'Analista',last:'Hace 18 min',active:true,color:'blue'},
+      {name:'Camila Ortega',email:'camila.ortega@themarketinggroup.com',initials:'CO',role:'Analista',last:'Ayer, 4:32 PM',active:true,color:'cyan'},
+      {name:'Andrés Navarro',email:'andres.navarro@themarketinggroup.com',initials:'AN',role:'Operativo',last:'Hoy, 8:15 AM',active:true,color:'emerald'},
+      {name:'Lucía Herrera',email:'lucia.herrera@themarketinggroup.com',initials:'LH',role:'Operativo',last:'02 ago 2026',active:false,color:'slate'}
     ];
 
     const periodMultipliers = { day:.045, week:.24, month:1, quarter:2.86, semester:5.42, year:10.7, custom:.82 };
@@ -339,7 +339,7 @@
 
     // Login and session
     document.getElementById('toggle-password').addEventListener('click',()=>{const i=document.getElementById('password'),icon=document.querySelector('#toggle-password i');i.type=i.type==='password'?'text':'password';icon.className=`fa-regular ${i.type==='password'?'fa-eye':'fa-eye-slash'}`;});
-    document.getElementById('login-form').addEventListener('submit',e=>{e.preventDefault();const email=document.getElementById('email'),pass=document.getElementById('password');[email,pass].forEach(i=>{const invalid=!i.value||(i.type==='email'&&!/^\S+@\S+\.\S+$/.test(i.value));i.classList.toggle('border-red-400',invalid);i.parentElement.nextElementSibling.classList.toggle('hidden',!invalid);});const btn=document.getElementById('login-button');btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i><span>Ingresando…</span>';setTimeout(()=>{document.getElementById('login-screen').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');btn.innerHTML='<span>Ingresar</span><i class="fa-solid fa-arrow-right text-xs"></i>';showToast('Sesión iniciada','Bienvenida, Alejandra. Tus reportes están actualizados.');},650);});
+    document.getElementById('login-form').addEventListener('submit',e=>{e.preventDefault();const email=document.getElementById('email'),pass=document.getElementById('password');[email,pass].forEach(i=>{const invalid=!i.value||(i.type==='email'&&!/^\S+@\S+\.\S+$/.test(i.value));i.classList.toggle('border-red-400',invalid);i.parentElement.nextElementSibling.classList.toggle('hidden',!invalid);});const btn=document.getElementById('login-button');btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i><span>Ingresando…</span>';setTimeout(()=>{document.getElementById('login-screen').classList.add('hidden');document.getElementById('app-shell').classList.remove('hidden');btn.innerHTML='<span>Ingresar</span><i class="fa-solid fa-arrow-right text-xs"></i>';showToast('Sesión iniciada','Bienvenida, Valeria. Tus reportes están actualizados.');},650);});
     document.querySelectorAll('[data-logout]').forEach(b=>b.addEventListener('click',()=>{document.getElementById('app-shell').classList.add('hidden');document.getElementById('login-screen').classList.remove('hidden');showToast('Sesión cerrada','Has salido del portal de forma segura.','info');}));
 
     // Navigation

@@ -1,6 +1,6 @@
 # TMG Insights - Demo Compras
 
-Prototipo interactivo de una plataforma web empresarial para The Marketing Group, alineada con el alcance comercial propuesto por DataKorex.
+Prototipo interactivo de una plataforma web empresarial para The Marketing Group.
 
 ## Características
 
