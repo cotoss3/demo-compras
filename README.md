@@ -7,6 +7,8 @@ Prototipo interactivo de una plataforma web empresarial para The Marketing Group
 - Inicio de sesión simulado.
 - Reportes consolidados con filtros por período.
 - Indicadores KPI, búsqueda y paginación.
+- Filtro de reportes por sucursal con cinco ubicaciones iniciales.
+- Catálogo administrable para crear productos y nuevas sucursales.
 - Exportación a CSV y formato compatible con Excel.
 - Historial de sincronizaciones.
 - Integraciones simuladas con ERP/POS, APIs, FTP y archivos Excel/TXT.
