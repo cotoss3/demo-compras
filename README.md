@@ -8,6 +8,8 @@ Prototipo interactivo de una plataforma web empresarial para The Marketing Group
 - Reportes consolidados con filtros por período.
 - Indicadores KPI, búsqueda y paginación.
 - Filtro de reportes por sucursal con cinco ubicaciones iniciales.
+- Jerarquía regional: consolidado, Panamá, Guatemala, Costa Rica y sucursales.
+- Menú independiente para analizar cada fuente de datos por país.
 - Catálogo administrable para crear productos y nuevas sucursales.
 - Exportación a CSV y formato compatible con Excel.
 - Historial de sincronizaciones.
