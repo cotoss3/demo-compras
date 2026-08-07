@@ -10,6 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -42,6 +45,8 @@
     .toast { transform:translateY(16px); opacity:0; pointer-events:none; transition:.25s ease; }
     .toast.show { transform:none; opacity:1; }
     .modal-backdrop { backdrop-filter: blur(4px); }
+    .leaflet-container { font-family:'DM Sans',sans-serif; background:#e2e8f0; }
+    .leaflet-control-attribution { font-size:9px!important; }
     @media (max-width: 1023px) {
       #sidebar { transform:translateX(-100%); transition:transform .25s ease; }
       #sidebar.open { transform:none; }
@@ -118,6 +123,7 @@
       <nav class="mt-7 min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1" aria-label="Navegación principal">
         <p class="mb-3 px-3 text-[10px] font-bold uppercase tracking-[.18em] text-slate-400">Workspace</p>
         <button data-view="reports" class="nav-link active flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-slate-100"><span class="nav-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="fa-solid fa-chart-pie"></i></span>Reportes</button>
+        <button data-view="category-analysis" class="nav-link flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-slate-100"><span class="nav-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="fa-solid fa-sitemap"></i></span>Categorías y ventas</button>
         <button data-view="source-analysis" class="nav-link flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-slate-100"><span class="nav-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="fa-solid fa-chart-column"></i></span>Análisis por fuente</button>
         <button data-view="history" class="nav-link flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-slate-100"><span class="nav-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="fa-solid fa-clock-rotate-left"></i></span>Historial de cargas</button>
         <button data-view="sources" class="nav-link flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-slate-100"><span class="nav-icon grid h-8 w-8 place-items-center rounded-lg bg-slate-100 text-slate-500"><i class="fa-solid fa-plug"></i></span>Configurar fuentes</button>
@@ -184,6 +190,16 @@
           </div>
         </section>
 
+        <!-- Category analytics -->
+        <section id="view-category-analysis" class="view">
+          <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 class="text-xl font-bold text-slate-900">Categorías, subcategorías y productos</h2><p class="mt-1 text-sm text-slate-500">Analiza ventas y administra el portafolio en sus tres niveles comerciales.</p></div><button id="manage-taxonomy" class="inline-flex h-10 w-fit items-center gap-2 rounded-xl bg-blue-600 px-4 text-xs font-bold text-white shadow-md shadow-blue-600/20 hover:bg-blue-700"><i class="fa-solid fa-plus"></i>Agregar elemento</button></div>
+          <div class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-card"><div class="grid gap-3 md:grid-cols-3"><label class="text-xs font-bold text-slate-500">Nivel de análisis<select id="taxonomy-level" class="mt-1.5 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700"><option value="category">Categoría</option><option value="subcategory">Subcategoría</option><option value="product">Producto</option></select></label><label class="text-xs font-bold text-slate-500">Selección<select id="taxonomy-item" class="mt-1.5 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700"></select></label><label class="text-xs font-bold text-slate-500">País<select id="taxonomy-country" class="mt-1.5 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-700"><option value="all">Consolidado regional</option><option value="panama">Panamá</option><option value="guatemala">Guatemala</option><option value="costa-rica">Costa Rica</option></select></label></div><div id="taxonomy-breadcrumb" class="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4 text-[10px] font-semibold text-slate-400"></div></div>
+          <div class="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"><p class="text-xs font-semibold text-slate-500">Ventas del período</p><p id="taxonomy-kpi-sales" class="mt-2 text-2xl font-bold text-slate-900">$0</p><p id="taxonomy-kpi-scope" class="mt-2 text-[11px] text-slate-400">Consolidado regional</p></div><div class="rounded-2xl border border-blue-100 bg-blue-50/60 p-5"><p class="text-xs font-semibold text-blue-700">Unidades vendidas</p><p id="taxonomy-kpi-units" class="mt-2 text-2xl font-bold text-blue-900">0</p><p class="mt-2 text-[11px] text-blue-600">Portafolio seleccionado</p></div><div class="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5"><p class="text-xs font-semibold text-emerald-700">Tendencia</p><p id="taxonomy-kpi-change" class="mt-2 text-2xl font-bold text-emerald-800">+0%</p><p class="mt-2 text-[11px] text-emerald-600">Vs. período anterior</p></div><div class="rounded-2xl border border-indigo-100 bg-indigo-50/60 p-5"><p class="text-xs font-semibold text-indigo-700">Participación</p><p id="taxonomy-kpi-share" class="mt-2 text-2xl font-bold text-indigo-900">0%</p><p class="mt-2 text-[11px] text-indigo-600">Sobre ventas regionales</p></div></div>
+          <div class="mb-5 grid gap-5 xl:grid-cols-[1.35fr_.65fr]"><div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"><div class="mb-5 flex items-center justify-between"><div><h3 class="text-sm font-bold text-slate-900">Tendencia de ventas</h3><p id="taxonomy-trend-caption" class="mt-1 text-xs text-slate-400">Evolución mensual</p></div><span class="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-bold text-emerald-700"><i class="fa-solid fa-arrow-trend-up mr-1"></i>Últimos 12 meses</span></div><div class="h-72"><canvas id="taxonomy-trend-chart"></canvas></div></div><div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-card"><div class="mb-4"><h3 class="text-sm font-bold text-slate-900">Distribución de ventas</h3><p id="taxonomy-pie-caption" class="mt-1 text-xs text-slate-400">Mix del portafolio</p></div><div class="mx-auto h-64 max-w-xs"><canvas id="taxonomy-pie-chart"></canvas></div></div></div>
+          <div class="mb-5 grid gap-5 xl:grid-cols-[1.15fr_.85fr]"><div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card"><div class="border-b border-slate-100 p-5"><h3 class="text-sm font-bold text-slate-900">Intensidad de ventas por ubicación</h3><p class="mt-1 text-xs text-slate-400">El tamaño y color representan el volumen de cada sucursal.</p></div><div id="taxonomy-sales-map" class="h-[390px] w-full"></div></div><div class="rounded-2xl border border-slate-200 bg-white shadow-card"><div class="border-b border-slate-100 p-5"><h3 class="text-sm font-bold text-slate-900">Ranking del nivel seleccionado</h3><p id="taxonomy-ranking-caption" class="mt-1 text-xs text-slate-400"></p></div><div id="taxonomy-ranking" class="divide-y divide-slate-100"></div></div></div>
+          <div class="rounded-2xl border border-slate-200 bg-white shadow-card"><div class="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h3 class="text-sm font-bold text-slate-900">Gestión del portafolio</h3><p class="mt-1 text-xs text-slate-400">Navega la jerarquía y revisa los productos asociados.</p></div><div class="flex gap-2 text-[10px] font-bold"><span class="rounded-full bg-blue-50 px-3 py-1.5 text-blue-700"><span id="taxonomy-category-count">2</span> categorías</span><span class="rounded-full bg-cyan-50 px-3 py-1.5 text-cyan-700"><span id="taxonomy-subcategory-count">9</span> subcategorías</span><span class="rounded-full bg-slate-100 px-3 py-1.5 text-slate-600"><span id="taxonomy-product-count">0</span> productos</span></div></div><div id="taxonomy-tree" class="grid gap-4 p-4 xl:grid-cols-2"></div></div>
+        </section>
+
         <!-- Source analysis -->
         <section id="view-source-analysis" class="view">
           <div class="mb-6"><h2 class="text-xl font-bold text-slate-900">Análisis por fuente de datos</h2><p class="mt-1 text-sm text-slate-500">Consulta el aporte y detalle de cada origen de información por país.</p></div>
@@ -247,6 +263,11 @@
       <form id="product-form" class="space-y-4"><div class="grid gap-4 sm:grid-cols-2"><label class="block text-xs font-bold text-slate-600">Código del producto<input id="new-product-code" required class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm uppercase focus:border-blue-500 focus:bg-white" placeholder="PRO-00001"></label><label class="block text-xs font-bold text-slate-600">Categoría<select id="new-product-category" class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm"><option>Bebidas carbonatadas</option><option>Agua y bienestar</option><option>Jugos y néctares</option><option>Snacks salados</option><option>Nutrición</option><option>Otros</option></select></label></div><label class="block text-xs font-bold text-slate-600">Nombre / descripción<input id="new-product-name" required class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-blue-500 focus:bg-white" placeholder="Nombre comercial del producto"></label><div class="flex justify-end gap-2 pt-3"><button data-close-catalog type="button" class="h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-600">Cancelar</button><button type="submit" class="h-10 rounded-xl bg-blue-600 px-5 text-xs font-bold text-white hover:bg-blue-700">Guardar producto</button></div></form>
       <form id="branch-form" class="hidden space-y-4"><div class="grid gap-4 sm:grid-cols-2"><label class="block text-xs font-bold text-slate-600">Código de sucursal<input id="new-branch-code" required class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm uppercase focus:border-blue-500 focus:bg-white" placeholder="SUC-006"></label><label class="block text-xs font-bold text-slate-600">País<select id="new-branch-country" class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm"><option value="panama">Panamá</option><option value="guatemala">Guatemala</option><option value="costa-rica">Costa Rica</option></select></label></div><label class="block text-xs font-bold text-slate-600">Ciudad<input id="new-branch-city" required class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-blue-500 focus:bg-white" placeholder="Ciudad"></label><label class="block text-xs font-bold text-slate-600">Nombre de la sucursal<input id="new-branch-name" required class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-blue-500 focus:bg-white" placeholder="Sucursal Plaza Central"></label><label class="block text-xs font-bold text-slate-600">Responsable<input id="new-branch-manager" required class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-blue-500 focus:bg-white" placeholder="Nombre del responsable"></label><div class="flex justify-end gap-2 pt-3"><button data-close-catalog type="button" class="h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-600">Cancelar</button><button type="submit" class="h-10 rounded-xl bg-blue-600 px-5 text-xs font-bold text-white hover:bg-blue-700">Guardar sucursal</button></div></form>
     </div>
+  </div>
+
+  <!-- Taxonomy Modal -->
+  <div id="taxonomy-modal" class="modal-backdrop fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/45 p-4">
+    <div class="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl sm:p-7"><div class="mb-6 flex items-start justify-between"><div><h3 class="text-lg font-bold text-slate-900">Agregar al portafolio</h3><p class="mt-1 text-xs text-slate-500">Crea una categoría, subcategoría o producto.</p></div><button data-close-taxonomy class="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark"></i></button></div><form id="taxonomy-form" class="space-y-4"><label class="block text-xs font-bold text-slate-600">Nivel<select id="new-taxonomy-level" class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm"><option value="category">Categoría</option><option value="subcategory">Subcategoría</option><option value="product">Producto</option></select></label><label id="taxonomy-parent-wrap" class="hidden text-xs font-bold text-slate-600">Pertenece a<select id="new-taxonomy-parent" class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm"></select></label><label class="block text-xs font-bold text-slate-600">Nombre<input id="new-taxonomy-name" required class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:border-blue-500 focus:bg-white" placeholder="Nombre comercial"></label><label id="taxonomy-segment-wrap" class="hidden text-xs font-bold text-slate-600">Segmento / tipo<input id="new-taxonomy-segment" class="mt-1.5 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm" placeholder="Ej. Papas fritas"></label><div class="flex justify-end gap-2 pt-3"><button data-close-taxonomy type="button" class="h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-600">Cancelar</button><button type="submit" class="h-10 rounded-xl bg-blue-600 px-5 text-xs font-bold text-white hover:bg-blue-700">Guardar elemento</button></div></form></div>
   </div>
 
   <div id="toast" class="toast fixed bottom-5 right-5 z-[60] flex max-w-sm items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl"><div id="toast-icon" class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><i class="fa-solid fa-check"></i></div><div><p id="toast-title" class="text-xs font-bold text-slate-800">Acción completada</p><p id="toast-message" class="mt-1 text-xs leading-5 text-slate-500"></p></div></div>
@@ -315,6 +336,44 @@
       {id:'guatemala-capital',code:'SUC-003',name:'Sucursal Guatemala Capital',city:'Ciudad de Guatemala',country:'guatemala',manager:'Natalia Paredes',factor:.18,active:true,last:'Hoy, 09:35 AM'},
       {id:'quetzaltenango',code:'SUC-004',name:'Sucursal Quetzaltenango',city:'Quetzaltenango',country:'guatemala',manager:'Jorge Salinas',factor:.13,active:true,last:'Hoy, 09:29 AM'},
       {id:'san-jose',code:'SUC-005',name:'Sucursal San José',city:'San José',country:'costa-rica',manager:'Elena Castillo',factor:.23,active:true,last:'Hoy, 09:22 AM'}
+    ];
+
+    const slugify=value=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    const taxProducts=(segment,names)=>names.map(name=>({id:slugify(name),name,segment}));
+    let taxonomy = [
+      {id:'alimentos-snacks',name:'Alimentos y Snacks',division:'Frito-Lay / Quaker / Gamesa',subcategories:[
+        {id:'snacks-salados',name:'Snacks Salados y Frituras',products:[
+          ...taxProducts('Papas fritas',["Lay's",'Ruffles','Sabritas',"Walker's",'Hostess',"Smith's"]),
+          ...taxProducts('Tortillas y maíz',['Doritos','Tostitos','Fritos','Cheetos','Rancheritos','Fandangos','Elma Chips']),
+          ...taxProducts('Anillos y bocadillos horneados',['Funyuns','SunChips','Monster Munch','Krakitos']),
+          ...taxProducts('Pretzel y bocadillos de trigo',['Rold Gold','Smartfood','Cracker Jack'])
+        ]},
+        {id:'galletas-reposteria',name:'Galletas y Repostería',products:[
+          ...taxProducts('Galletas dulces y empaquetadas',['Emperador','Chokis','Marías Gamesa','Habaneras','Gamesa',"Grandma's Cookies"]),
+          ...taxProducts('Galletas saladas y soda',['Saladitas','Cremositas'])
+        ]},
+        {id:'cereales-avena',name:'Cereales, Avena y Nutrición',products:[
+          ...taxProducts('Cereales de caja',['Quaker',"Cap'n Crunch",'Life Cereal','Quaker Oatmeal']),
+          ...taxProducts('Barras de cereal y snacks saludables',['Quaker Chewy Granola Bars','Quaker Dipps','Sunbites'])
+        ]},
+        {id:'otros-alimentos',name:'Otros Alimentos',products:[
+          ...taxProducts('Cremas y dips',['Sabra','Obela','Dips Frito-Lay']),
+          ...taxProducts('Semillas y frutos secos',['Mafer','Frito-Lay Nuts & Seeds'])
+        ]}
+      ]},
+      {id:'bebidas',name:'Bebidas',division:'PepsiCo Beverages / GEPP',subcategories:[
+        {id:'carbonatadas',name:'Bebidas Carbonatadas',products:[
+          ...taxProducts('Colas',['Pepsi','Pepsi Zero Azúcar','Pepsi Light / Max','7UP','Mountain Dew']),
+          ...taxProducts('Sabores y frutales',['Mirinda','Manzanita Sol','Kas','Teem','Mug Root Beer','Sierra Mist'])
+        ]},
+        {id:'isotonicas',name:'Bebidas Isotónicas y Deportivas',products:taxProducts('Hidratación y rendimiento',['Gatorade','G2','Propel','Aquarade'])},
+        {id:'energizantes',name:'Energizantes',products:taxProducts('Estimulantes y creadoras de energía',['Rockstar','AMP Energy','Mountain Dew Energy'])},
+        {id:'aguas',name:'Aguas Embotelladas y Funcionales',products:taxProducts('Agua purificada y saborizada',['Aquafina','E-Pura','Bubly','SoBe Lifewater'])},
+        {id:'jugos-tes-rtd',name:'Jugos, Néctares y Tés RTD',products:[
+          ...taxProducts('Jugos y frutas',['Tropicana','Dole','Ocean Spray','Alvalle']),
+          ...taxProducts('Tés y cafés listos para beber',['Lipton','Brisk','Starbucks RTD',"Seattle's Best Coffee"])
+        ]}
+      ]}
     ];
 
     const periodMultipliers = { day:.045, week:.24, month:1, quarter:2.86, semester:5.42, year:10.7, custom:.82 };
@@ -406,6 +465,80 @@
     }
     window.toggleBranch=id=>{const b=branches.find(x=>x.id===id);b.active=!b.active;if(currentBranch===id&&!b.active)currentBranch='all';renderBranchFilter();renderCatalogs();renderProducts();showToast(b.active?'Sucursal activada':'Sucursal desactivada',`${b.name} ${b.active?'ya está disponible en los reportes':'fue retirada de los filtros'}.`,b.active?'success':'info');};
 
+    const flattenTaxonomy=()=>taxonomy.flatMap(c=>c.subcategories.flatMap(s=>s.products.map(p=>({...p,categoryId:c.id,categoryName:c.name,subcategoryId:s.id,subcategoryName:s.name}))));
+    const hashValue=value=>[...value].reduce((acc,ch)=>(acc*31+ch.charCodeAt(0))>>>0,7);
+    const taxonomyBaseSales=p=>35000+(hashValue(p.name)%125000);
+    let taxonomyTrendChart=null,taxonomyPieChart=null,taxonomyMap=null,taxonomyMapLayer=null,taxonomyAnalyticsReady=false;
+
+    function renderTaxonomySelector(){
+      const level=document.getElementById('taxonomy-level').value,select=document.getElementById('taxonomy-item'),previous=select.value;
+      let options=[];
+      if(level==='category')options=taxonomy.map(c=>({value:c.id,label:c.name}));
+      if(level==='subcategory')options=taxonomy.flatMap(c=>c.subcategories.map(s=>({value:`${c.id}::${s.id}`,label:`${c.name} / ${s.name}`})));
+      if(level==='product')options=flattenTaxonomy().map(p=>({value:`${p.categoryId}::${p.subcategoryId}::${p.id}`,label:`${p.name} · ${p.subcategoryName}`}));
+      const allLabel=level==='category'?'Todas las categorías':level==='subcategory'?'Todas las subcategorías':'Todos los productos';
+      select.innerHTML=`<option value="all">${allLabel}</option>`+options.map(o=>`<option value="${o.value}">${o.label}</option>`).join('');
+      select.value=options.some(o=>o.value===previous)?previous:'all';
+    }
+
+    function getTaxonomyContext(){
+      const level=document.getElementById('taxonomy-level').value,value=document.getElementById('taxonomy-item').value,all=flattenTaxonomy();
+      let selected=all,label=level==='category'?'Todas las categorías':level==='subcategory'?'Todas las subcategorías':'Todos los productos',crumbs=[];
+      if(value!=='all'){
+        const [categoryId,subcategoryId,productId]=value.split('::'),category=taxonomy.find(c=>c.id===categoryId),subcategory=category?.subcategories.find(s=>s.id===subcategoryId);
+        if(level==='category'){selected=all.filter(p=>p.categoryId===categoryId);label=category.name;crumbs=[category.name];}
+        if(level==='subcategory'){selected=all.filter(p=>p.categoryId===categoryId&&p.subcategoryId===subcategoryId);label=subcategory.name;crumbs=[category.name,subcategory.name];}
+        if(level==='product'){selected=all.filter(p=>p.categoryId===categoryId&&p.subcategoryId===subcategoryId&&p.id===productId);label=selected[0]?.name||'Producto';crumbs=[category.name,subcategory.name,label];}
+      }
+      return {level,value,all,selected,label,crumbs};
+    }
+
+    function taxonomyGroupSales(items){return items.reduce((sum,p)=>sum+taxonomyBaseSales(p),0);}
+    function getTaxonomyBreakdown(context){
+      if(context.level==='category'&&context.value==='all')return taxonomy.map(c=>({label:c.name,value:taxonomyGroupSales(context.all.filter(p=>p.categoryId===c.id))}));
+      if(context.level==='category')return taxonomy.find(c=>c.id===context.value).subcategories.map(s=>({label:s.name,value:taxonomyGroupSales(context.all.filter(p=>p.subcategoryId===s.id))}));
+      if(context.level==='subcategory'&&context.value==='all')return taxonomy.flatMap(c=>c.subcategories.map(s=>({label:s.name,value:taxonomyGroupSales(context.all.filter(p=>p.subcategoryId===s.id))}))).sort((a,b)=>b.value-a.value).slice(0,7);
+      if(context.level==='subcategory')return context.selected.map(p=>({label:p.name,value:taxonomyBaseSales(p)})).sort((a,b)=>b.value-a.value).slice(0,7);
+      if(context.level==='product'&&context.value==='all')return context.all.map(p=>({label:p.name,value:taxonomyBaseSales(p)})).sort((a,b)=>b.value-a.value).slice(0,7);
+      return Object.entries(countries).map(([id,c])=>({label:c.name,value:taxonomyGroupSales(context.selected)*c.factor}));
+    }
+
+    function renderTaxonomyMap(context,totalSales){
+      if(!taxonomyMap){taxonomyMap=L.map('taxonomy-sales-map',{zoomControl:true,scrollWheelZoom:false}).setView([11.5,-85.7],5);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap'}).addTo(taxonomyMap);taxonomyMapLayer=L.layerGroup().addTo(taxonomyMap);}
+      taxonomyMapLayer.clearLayers();
+      const country=document.getElementById('taxonomy-country').value,locations={
+        'panama-central':[8.9824,-79.5199],'costa-este':[9.0175,-79.4665],'guatemala-capital':[14.6349,-90.5069],'quetzaltenango':[14.8347,-91.5181],'san-jose':[9.9281,-84.0907]
+      },visible=branches.filter(b=>b.active&&(country==='all'||b.country===country)),values=visible.map(b=>{const denominator=country==='all'?1:countries[country].factor;return {branch:b,value:Math.round(totalSales*(b.factor/denominator))};}),max=Math.max(...values.map(v=>v.value),1),bounds=[];
+      values.forEach(({branch,value})=>{const coords=locations[branch.id]||[11,-85],ratio=value/max,color=ratio>.72?'#1d4ed8':ratio>.42?'#2563eb':'#60a5fa';bounds.push(coords);L.circleMarker(coords,{radius:9+ratio*18,fillColor:color,color:'#fff',weight:2,opacity:1,fillOpacity:.78}).bindPopup(`<strong>${branch.name}</strong><br>${countries[branch.country].name}<br><b>$${fmt(value)}</b> en ventas`).addTo(taxonomyMapLayer);});
+      setTimeout(()=>{taxonomyMap.invalidateSize();if(bounds.length>1)taxonomyMap.fitBounds(bounds,{padding:[35,35],maxZoom:7});else if(bounds.length===1)taxonomyMap.setView(bounds[0],7);},30);
+    }
+
+    function renderTaxonomyAnalytics(){
+      if(typeof Chart==='undefined'||typeof L==='undefined')return;
+      const context=getTaxonomyContext(),country=document.getElementById('taxonomy-country').value,factor=country==='all'?1:countries[country].factor,baseSales=taxonomyGroupSales(context.selected),sales=Math.round(baseSales*factor),units=Math.round(sales/2.85),total=Math.round(taxonomyGroupSales(context.all)*factor),change=((hashValue(context.label)%151)/10-2.5),scope=country==='all'?'Consolidado regional':countries[country].name;
+      document.getElementById('taxonomy-kpi-sales').textContent=`$${fmt(sales)}`;document.getElementById('taxonomy-kpi-units').textContent=fmt(units);document.getElementById('taxonomy-kpi-scope').textContent=scope;document.getElementById('taxonomy-kpi-share').textContent=`${((sales/total)*100).toFixed(1)}%`;
+      const changeEl=document.getElementById('taxonomy-kpi-change');changeEl.textContent=`${change>=0?'+':''}${change.toFixed(1)}%`;changeEl.className=`mt-2 text-2xl font-bold ${change>=0?'text-emerald-800':'text-red-600'}`;
+      const crumbs=['Portafolio',...context.crumbs,scope];document.getElementById('taxonomy-breadcrumb').innerHTML=crumbs.map((x,i)=>`${i?'<i class="fa-solid fa-chevron-right text-[7px] text-slate-300"></i>':''}<span class="${i===crumbs.length-1?'text-blue-700':'text-slate-400'}">${x}</span>`).join('');
+      document.getElementById('taxonomy-trend-caption').textContent=`${context.label} · ${scope}`;
+      const months=['Sep','Oct','Nov','Dic','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago'],multipliers=[.72,.78,.81,.9,.86,.92,.95,1.01,.98,1.08,1.12,1.18],trend=multipliers.map(m=>Math.round((sales/10.6)*m));
+      if(taxonomyTrendChart)taxonomyTrendChart.destroy();taxonomyTrendChart=new Chart(document.getElementById('taxonomy-trend-chart'),{type:'line',data:{labels:months,datasets:[{data:trend,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.1)',fill:true,tension:.4,borderWidth:2.5,pointRadius:0,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` $${fmt(c.raw)}`}}},scales:{x:{grid:{display:false},ticks:{color:'#94a3b8',font:{size:10}}},y:{grid:{color:'rgba(226,232,240,.7)'},ticks:{color:'#94a3b8',font:{size:10},callback:v=>`$${Math.round(v/1000)}k`}}}}});
+      const breakdown=getTaxonomyBreakdown(context),palette=['#2563eb','#4f46e5','#06b6d4','#14b8a6','#60a5fa','#818cf8','#94a3b8'];document.getElementById('taxonomy-pie-caption').textContent=context.value==='all'?`Distribución del nivel ${context.level==='category'?'categoría':context.level==='subcategory'?'subcategoría':'producto'}`:`Composición de ${context.label}`;
+      if(taxonomyPieChart)taxonomyPieChart.destroy();taxonomyPieChart=new Chart(document.getElementById('taxonomy-pie-chart'),{type:'pie',data:{labels:breakdown.map(x=>x.label),datasets:[{data:breakdown.map(x=>Math.round(x.value*factor)),backgroundColor:palette,borderColor:'#fff',borderWidth:3,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:8,boxHeight:8,usePointStyle:true,pointStyle:'circle',padding:12,font:{size:9},color:'#64748b'}},tooltip:{callbacks:{label:c=>` ${c.label}: $${fmt(c.raw)}`}}}}});
+      document.getElementById('taxonomy-ranking-caption').textContent=`${context.label} · ${scope}`;document.getElementById('taxonomy-ranking').innerHTML=breakdown.slice(0,6).map((x,i)=>{const adjusted=Math.round(x.value*factor),maxValue=Math.max(...breakdown.map(y=>y.value*factor));return `<div class="p-4 sm:px-5"><div class="flex items-center justify-between gap-3"><div class="flex min-w-0 items-center gap-3"><span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg ${i<3?'bg-blue-50 text-blue-700':'bg-slate-100 text-slate-500'} text-[10px] font-bold">${i+1}</span><p class="truncate text-xs font-semibold text-slate-700">${x.label}</p></div><p class="whitespace-nowrap text-xs font-bold text-slate-900">$${fmt(adjusted)}</p></div><div class="ml-10 mt-2 h-1 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full bg-blue-500" style="width:${Math.max(6,(adjusted/maxValue)*100)}%"></div></div></div>`}).join('');
+      renderTaxonomyMap(context,sales);taxonomyAnalyticsReady=true;
+    }
+
+    function renderTaxonomyTree(){
+      const all=flattenTaxonomy();document.getElementById('taxonomy-category-count').textContent=taxonomy.length;document.getElementById('taxonomy-subcategory-count').textContent=taxonomy.reduce((n,c)=>n+c.subcategories.length,0);document.getElementById('taxonomy-product-count').textContent=all.length;
+      document.getElementById('taxonomy-tree').innerHTML=taxonomy.map((c,index)=>`<article class="rounded-2xl border border-slate-200 bg-slate-50/60 p-4"><div class="mb-4 flex items-start justify-between gap-3"><div class="flex items-center gap-3"><div class="grid h-11 w-11 place-items-center rounded-xl ${index%2?'bg-blue-600':'bg-indigo-600'} text-white"><i class="fa-solid ${index%2?'fa-bottle-water':'fa-cookie-bite'}"></i></div><div><h4 class="text-sm font-bold text-slate-900">${c.name}</h4><p class="mt-1 text-[10px] text-slate-400">${c.division} · ${c.subcategories.reduce((n,s)=>n+s.products.length,0)} productos</p></div></div><button onclick="showToast('Editar categoría','La edición detallada estará disponible en producción.','info')" class="grid h-8 w-8 place-items-center rounded-lg text-slate-400 hover:bg-white hover:text-blue-600"><i class="fa-solid fa-pen text-[10px]"></i></button></div><div class="space-y-2">${c.subcategories.map(s=>`<details class="group rounded-xl border border-slate-200 bg-white"><summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3"><div><p class="text-xs font-bold text-slate-700">${s.name}</p><p class="mt-1 text-[10px] text-slate-400">${s.products.length} productos</p></div><i class="fa-solid fa-chevron-down text-[9px] text-slate-400 transition group-open:rotate-180"></i></summary><div class="max-h-64 space-y-1 overflow-y-auto border-t border-slate-100 p-2">${s.products.map(p=>`<div class="flex items-center justify-between gap-3 rounded-lg px-2 py-2 hover:bg-slate-50"><div class="min-w-0"><p class="truncate text-[11px] font-semibold text-slate-700">${p.name}</p><p class="mt-0.5 truncate text-[9px] text-slate-400">${p.segment}</p></div><span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" title="Activo"></span></div>`).join('')}</div></details>`).join('')}</div></article>`).join('');
+    }
+
+    function updateTaxonomyParentOptions(){
+      const level=document.getElementById('new-taxonomy-level').value,parentWrap=document.getElementById('taxonomy-parent-wrap'),segmentWrap=document.getElementById('taxonomy-segment-wrap'),parent=document.getElementById('new-taxonomy-parent');parentWrap.classList.toggle('hidden',level==='category');segmentWrap.classList.toggle('hidden',level!=='product');
+      if(level==='subcategory')parent.innerHTML=taxonomy.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+      if(level==='product')parent.innerHTML=taxonomy.flatMap(c=>c.subcategories.map(s=>`<option value="${c.id}::${s.id}">${c.name} / ${s.name}</option>`)).join('');
+    }
+
     const sourceDefinitions={
       erp:{name:'ERP Corporativo',sync:'Hoy, 09:30',change:8.4,distribution:[45,32,23]},
       pos:{name:'POS Sucursales',sync:'Hoy, 09:38',change:11.2,distribution:[48,30,22]},
@@ -435,8 +568,8 @@
     document.querySelectorAll('[data-logout]').forEach(b=>b.addEventListener('click',()=>{document.getElementById('app-shell').classList.add('hidden');document.getElementById('login-screen').classList.remove('hidden');showToast('Sesión cerrada','Has salido del portal de forma segura.','info');}));
 
     // Navigation
-    const viewMeta={reports:['Reportes de compras','Vista consolidada por país y sucursal'],'source-analysis':['Análisis por fuente','Detalle operativo de cada origen de datos'],history:['Historial de cargas','Seguimiento y auditoría de sincronizaciones'],sources:['Configuración de fuentes','API, FTP y archivos Excel/TXT'],catalogs:['Productos y sucursales','Configuración de catálogos comerciales'],users:['Usuarios y perfiles','Control de acceso y permisos de la plataforma']};
-    document.querySelectorAll('.nav-link').forEach(btn=>btn.addEventListener('click',()=>{const v=btn.dataset.view;document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(`view-${v}`).classList.add('active');document.getElementById('header-title').textContent=viewMeta[v][0];document.getElementById('header-subtitle').textContent=viewMeta[v][1];closeSidebar();window.scrollTo({top:0,behavior:'smooth'});}));
+    const viewMeta={reports:['Reportes de compras','Vista consolidada por país y sucursal'],'category-analysis':['Categorías y ventas','Análisis y gestión del portafolio en tres niveles'],'source-analysis':['Análisis por fuente','Detalle operativo de cada origen de datos'],history:['Historial de cargas','Seguimiento y auditoría de sincronizaciones'],sources:['Configuración de fuentes','API, FTP y archivos Excel/TXT'],catalogs:['Productos y sucursales','Configuración de catálogos comerciales'],users:['Usuarios y perfiles','Control de acceso y permisos de la plataforma']};
+    document.querySelectorAll('.nav-link').forEach(btn=>btn.addEventListener('click',()=>{const v=btn.dataset.view;document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById(`view-${v}`).classList.add('active');document.getElementById('header-title').textContent=viewMeta[v][0];document.getElementById('header-subtitle').textContent=viewMeta[v][1];closeSidebar();window.scrollTo({top:0,behavior:'smooth'});if(v==='category-analysis')setTimeout(renderTaxonomyAnalytics,80);}));
     const sidebar=document.getElementById('sidebar'),overlay=document.getElementById('sidebar-overlay');
     function openSidebar(){sidebar.classList.add('open');overlay.classList.remove('hidden');} function closeSidebar(){sidebar.classList.remove('open');overlay.classList.add('hidden');}
     document.getElementById('open-sidebar').onclick=openSidebar;document.getElementById('close-sidebar').onclick=closeSidebar;overlay.onclick=closeSidebar;
@@ -448,6 +581,7 @@
     document.getElementById('country-filter').addEventListener('change',e=>{currentCountry=e.target.value;currentBranch='all';currentPage=1;renderBranchFilter();renderProducts();showToast('País aplicado',currentCountry==='all'?'Mostrando el consolidado regional.':`Mostrando información de ${countries[currentCountry].name}.`,'info');});
     document.getElementById('branch-filter').addEventListener('change',e=>{currentBranch=e.target.value;currentPage=1;renderProducts();const label=currentBranch==='all'?'todas las sucursales':branches.find(b=>b.id===currentBranch)?.name;showToast('Sucursal aplicada',`Mostrando información de ${label}.`,'info');});
     document.getElementById('source-analysis-country').addEventListener('change',renderSourceAnalysis);document.getElementById('source-analysis-select').addEventListener('change',renderSourceAnalysis);
+    document.getElementById('taxonomy-level').addEventListener('change',()=>{renderTaxonomySelector();if(taxonomyAnalyticsReady)renderTaxonomyAnalytics();});document.getElementById('taxonomy-item').addEventListener('change',()=>{if(taxonomyAnalyticsReady)renderTaxonomyAnalytics();});document.getElementById('taxonomy-country').addEventListener('change',()=>{if(taxonomyAnalyticsReady)renderTaxonomyAnalytics();});
 
     // Export demo
     function exportData(kind){const m=getMultiplier();const sep=kind==='csv'?',':'\t';const countryName=currentCountry==='all'?'Consolidado regional':countries[currentCountry].name;const branchName=currentBranch==='all'?'Todas las sucursales':branches.find(b=>b.id===currentBranch)?.name;const rows=[['País',countryName],['Sucursal',branchName],[],['Código','Producto','ERP Corporativo','POS Sucursales','Ecommerce','Total','Variación %'],...filteredProducts.map(p=>{const a=Math.round(p.a*m),b=Math.round(p.b*m),c=Math.round(p.c*m);return[p.code,p.name,a,b,c,a+b+c,p.change];})];const text='\uFEFF'+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(sep)).join('\n');const blob=new Blob([text],{type:kind==='csv'?'text/csv;charset=utf-8':'application/vnd.ms-excel;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`reporte_compras_${currentPeriod}_${currentCountry}_${currentBranch}.${kind==='csv'?'csv':'xls'}`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);showToast('Exportación completada',`El reporte ${kind==='csv'?'CSV':'Excel'} fue generado para ${countryName} · ${branchName}.`);}
@@ -469,10 +603,13 @@
     document.querySelectorAll('[data-close-catalog]').forEach(b=>b.onclick=closeCatalogModal);catalogModal.addEventListener('click',e=>{if(e.target===catalogModal)closeCatalogModal();});
     document.getElementById('product-form').addEventListener('submit',e=>{e.preventDefault();const code=document.getElementById('new-product-code').value.trim().toUpperCase(),name=document.getElementById('new-product-name').value.trim(),category=document.getElementById('new-product-category').value;if(products.some(p=>p.code.toLowerCase()===code.toLowerCase())){showToast('Código duplicado','Utiliza un código de producto diferente.','error');return;}products.push({code,name,category,a:Math.floor(Math.random()*500+350),b:Math.floor(Math.random()*380+240),c:Math.floor(Math.random()*260+160),change:Number((Math.random()*18-3).toFixed(1))});filteredProducts=[...products];document.getElementById('product-search').value='';currentPage=Math.ceil(products.length/pageSize);renderProducts();renderCatalogs();closeCatalogModal();e.target.reset();showToast('Producto agregado',`${code} · ${name} ya está disponible en los reportes.`);});
     document.getElementById('branch-form').addEventListener('submit',e=>{e.preventDefault();const code=document.getElementById('new-branch-code').value.trim().toUpperCase(),name=document.getElementById('new-branch-name').value.trim(),city=document.getElementById('new-branch-city').value.trim(),country=document.getElementById('new-branch-country').value,manager=document.getElementById('new-branch-manager').value.trim();if(branches.some(b=>b.code.toLowerCase()===code.toLowerCase())){showToast('Código duplicado','Utiliza un código de sucursal diferente.','error');return;}const id=`branch-${Date.now()}`;branches.push({id,code,name,city,country,manager,factor:.08,active:true,last:'Sin sincronizar'});renderBranchFilter();renderCatalogs();updateKpis();closeCatalogModal();e.target.reset();showToast('Sucursal agregada',`${name}, ${countries[country].name}, ya aparece en los filtros.`);});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCatalogModal();closeSidebar();}});
+    const taxonomyModal=document.getElementById('taxonomy-modal');document.getElementById('manage-taxonomy').onclick=()=>{document.getElementById('new-taxonomy-level').value='category';updateTaxonomyParentOptions();taxonomyModal.classList.remove('hidden');taxonomyModal.classList.add('flex');setTimeout(()=>document.getElementById('new-taxonomy-name').focus(),50);};
+    function closeTaxonomyModal(){taxonomyModal.classList.add('hidden');taxonomyModal.classList.remove('flex');}document.querySelectorAll('[data-close-taxonomy]').forEach(b=>b.onclick=closeTaxonomyModal);taxonomyModal.addEventListener('click',e=>{if(e.target===taxonomyModal)closeTaxonomyModal();});document.getElementById('new-taxonomy-level').addEventListener('change',updateTaxonomyParentOptions);
+    document.getElementById('taxonomy-form').addEventListener('submit',e=>{e.preventDefault();const level=document.getElementById('new-taxonomy-level').value,name=document.getElementById('new-taxonomy-name').value.trim(),parent=document.getElementById('new-taxonomy-parent').value,segment=document.getElementById('new-taxonomy-segment').value.trim();if(level==='category'){if(taxonomy.some(c=>c.name.toLowerCase()===name.toLowerCase())){showToast('Categoría duplicada','Utiliza un nombre diferente.','error');return;}taxonomy.push({id:`${slugify(name)}-${Date.now()}`,name,division:'Portafolio personalizado',subcategories:[]});}if(level==='subcategory'){const category=taxonomy.find(c=>c.id===parent);if(category.subcategories.some(s=>s.name.toLowerCase()===name.toLowerCase())){showToast('Subcategoría duplicada','Utiliza un nombre diferente.','error');return;}category.subcategories.push({id:`${slugify(name)}-${Date.now()}`,name,products:[]});}if(level==='product'){const [categoryId,subcategoryId]=parent.split('::'),subcategory=taxonomy.find(c=>c.id===categoryId).subcategories.find(s=>s.id===subcategoryId);if(subcategory.products.some(p=>p.name.toLowerCase()===name.toLowerCase())){showToast('Producto duplicado','Utiliza un nombre diferente.','error');return;}subcategory.products.push({id:`${slugify(name)}-${Date.now()}`,name,segment:segment||'Sin segmento'});}renderTaxonomySelector();renderTaxonomyTree();if(taxonomyAnalyticsReady)renderTaxonomyAnalytics();closeTaxonomyModal();e.target.reset();updateTaxonomyParentOptions();showToast('Portafolio actualizado',`${name} fue agregado correctamente.`);});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCatalogModal();closeTaxonomyModal();closeSidebar();}});
 
     document.getElementById('today-label').textContent=new Intl.DateTimeFormat('es-ES',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(new Date());
-    renderBranchFilter();renderProducts();renderSourceAnalysis();renderHistory();renderSources();renderUsers();renderCatalogs();
+    renderBranchFilter();renderProducts();renderSourceAnalysis();renderHistory();renderSources();renderUsers();renderCatalogs();renderTaxonomySelector();renderTaxonomyTree();updateTaxonomyParentOptions();
   </script>
 </body>
 </html>
